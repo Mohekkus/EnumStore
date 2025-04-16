@@ -4,7 +4,11 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.byteArrayPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +26,10 @@ class EnumStore(context: Context, keyName: String): BaseDatastore(context, keyNa
         fun String.booleanKey() = booleanPreferencesKey(this)
         fun String.stringKey() = stringPreferencesKey(this)
         fun String.setKey() = stringSetPreferencesKey(this)
+        fun String.intKey() = intPreferencesKey(this)
+        fun String.doubleKey() = doublePreferencesKey(this)
+        fun String.longKey() = longPreferencesKey(this)
+        fun String.byteArrayKey() = byteArrayPreferencesKey(this)
 
         private lateinit var _instance: EnumStore
         val instance: EnumStore?
@@ -54,6 +62,19 @@ class EnumStore(context: Context, keyName: String): BaseDatastore(context, keyNa
     override fun getStrings(name: String): String =
         get(name.stringKey()) ?: ""
 
+    override fun getInt(name: String): Int =
+        get(name.intKey()) ?: -1
+
+    override fun getDouble(name: String): Double =
+        get(name.doubleKey()) ?: 0.0
+
+    override fun getLong(name: String): Long =
+        get(name.longKey()) ?: 0L
+
+    override fun getByteArray(name: String): ByteArray =
+        get(name.byteArrayKey()) ?: byteArrayOf()
+
+
     override fun <T> edit(key: Preferences.Key<T>, value: T) {
         CoroutineScope(Dispatchers.IO).launch {
             setting.edit {
@@ -70,6 +91,18 @@ class EnumStore(context: Context, keyName: String): BaseDatastore(context, keyNa
 
     override fun setStrings(name: String, value: String) =
         edit(name.stringKey(), value)
+
+    override fun setInt(name: String, value: Int) =
+        edit(name.intKey(), value)
+
+    override fun setDouble(name: String, value: Double) =
+        edit(name.doubleKey(), value)
+
+    override fun setLong(name: String, value: Long) =
+        edit(name.longKey(), value)
+
+    override fun setByteArray(name: String, value: ByteArray) =
+        edit(name.byteArrayKey(), value)
 
 
     override fun <T> erase(name: Preferences.Key<T>) {
@@ -88,6 +121,19 @@ class EnumStore(context: Context, keyName: String): BaseDatastore(context, keyNa
 
     override fun eraseString(name: String) =
         erase(name.stringKey())
+
+    override fun eraseInt(name: String) =
+        erase(name.intKey())
+
+    override fun eraseDouble(name: String) =
+        erase(name.doubleKey())
+
+    override fun eraseLong(name: String) =
+        erase(name.longKey())
+
+    override fun eraseByteArray(name: String) =
+        erase(name.byteArrayKey())
+
 
     override fun purge() {
         CoroutineScope(Dispatchers.IO).launch {
