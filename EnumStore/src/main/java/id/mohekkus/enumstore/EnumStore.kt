@@ -62,17 +62,17 @@ class EnumStore(context: Context, keyName: String): BaseDatastore(context, keyNa
     override fun getStrings(name: String): String =
         get(name.stringKey()) ?: ""
 
-    override fun getInt(name: String): Int =
-        get(name.intKey()) ?: -1
+    override fun getInt(name: String): Int? =
+        get(name.intKey())
 
-    override fun getDouble(name: String): Double =
-        get(name.doubleKey()) ?: 0.0
+    override fun getDouble(name: String): Double? =
+        get(name.doubleKey())
 
-    override fun getLong(name: String): Long =
-        get(name.longKey()) ?: 0L
+    override fun getLong(name: String): Long? =
+        get(name.longKey())
 
-    override fun getByteArray(name: String): ByteArray =
-        get(name.byteArrayKey()) ?: byteArrayOf()
+    override fun getByteArray(name: String): ByteArray? =
+        get(name.byteArrayKey())
 
 
     override fun <T> edit(key: Preferences.Key<T>, value: T) {

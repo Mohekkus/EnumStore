@@ -8,10 +8,10 @@ interface EnumStoreImpl {
     fun getBoolean(name: String): Boolean
     fun getList(name: String): Set<String>
     fun getStrings(name: String): String
-    fun getInt(name: String): Int
-    fun getDouble(name: String): Double
-    fun getLong(name: String): Long
-    fun getByteArray(name: String): ByteArray
+    fun getInt(name: String): Int?
+    fun getDouble(name: String): Double?
+    fun getLong(name: String): Long?
+    fun getByteArray(name: String): ByteArray?
 
     fun <T> edit(name: Preferences.Key<T>, value: T)
     fun setBoolean(name: String, value: Boolean)
