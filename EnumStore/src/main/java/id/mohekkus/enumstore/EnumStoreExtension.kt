@@ -1,37 +1,48 @@
 package id.mohekkus.enumstore
 
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.byteArrayPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import id.mohekkus.enumstore.EnumStore.Companion.instance
 
 object EnumStoreExtension {
 
-    private val enumStore = EnumStore.instance
+    fun <T> get(name: Preferences.Key<T>): T? = instance?.get(name)
 
-    fun <T> get(name: Preferences.Key<T>): T? = enumStore?.get(name)
-    fun getBoolean(name: String): Boolean = enumStore?.getBoolean(name) == true
-    fun getList(name: String): Set<String> = enumStore?.getList(name) ?: setOf()
-    fun getString(name: String): String = enumStore?.getStrings(name) ?: ""
-    fun getInt(name: String): Int? = enumStore?.getInt(name)
-    fun getDouble(name: String): Double? = enumStore?.getDouble(name)
-    fun getLong(name: String): Long? = enumStore?.getLong(name)
-    fun getByteArray(name: String): ByteArray? = enumStore?.getByteArray(name)
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified R> getEnumPreferenceKey(name: String): Preferences.Key<R>  {
+        return when (R::class) {
+            String::class -> stringPreferencesKey(name)
+            Boolean::class -> booleanPreferencesKey(name)
+            Set::class -> stringSetPreferencesKey(name)
+            Int::class -> intPreferencesKey(name)
+            Double::class -> doublePreferencesKey(name)
+            Long::class -> longPreferencesKey(name)
+            ByteArray::class -> byteArrayPreferencesKey(name)
 
-    fun <T> set(name: Preferences.Key<T>, value: T) = enumStore?.edit(name, value)
-    fun setBoolean(name: String, value: Boolean) = enumStore?.setBoolean(name, value)
-    fun setList(name: String, value: Set<String>) = enumStore?.setList(name, value)
-    fun setString(name: String, value: String) = enumStore?.setStrings(name, value)
-    fun setInt(name: String, value: Int) = enumStore?.setInt(name, value)
-    fun setDouble(name: String, value: Double) = enumStore?.setDouble(name, value)
-    fun setLong(name: String, value: Long) = enumStore?.setLong(name, value)
-    fun setByteArray(name: String, value: ByteArray) = enumStore?.setByteArray(name, value)
+            else -> error("Type ${R::class} is not supported")
+        } as Preferences.Key<R>
+    }
+    
+    inline fun <reified T, reified R> T.get(
+        defaultValue: R
+    ): R where T : Enum<T>, T : EnumStoreOption =
+        instance?.get(
+            getEnumPreferenceKey<R>(name)
+        ) ?: defaultValue
 
-    fun <T> erase(name: Preferences.Key<T>) = enumStore?.erase(name)
-    fun eraseBoolean(name: String) = enumStore?.eraseBoolean(name)
-    fun eraseList(name: String) = enumStore?.eraseList(name)
-    fun eraseString(name: String) = enumStore?.eraseString(name)
-    fun eraseInt(name: String) = enumStore?.eraseInt(name)
-    fun eraseDouble(name: String) = enumStore?.eraseDouble(name)
-    fun eraseLong(name: String) = enumStore?.eraseLong(name)
-    fun eraseByteArray(name: String) = enumStore?.eraseByteArray(name)
 
-    fun purge() = enumStore?.purge()
+//    inline fun <reified T, reified R> T.set(
+//        value: R
+//    ) where T : Enum<T>, T : EnumStoreOption =
+//        instance?.edit(getEnumStoreKey<T, R>(), value)
+//
+//    inline fun <reified T> T.erase() where T : Enum<T>, T : EnumStoreOption =
+//        instance?.erase(getEnumStoreKey<T, R>())
+
 }
