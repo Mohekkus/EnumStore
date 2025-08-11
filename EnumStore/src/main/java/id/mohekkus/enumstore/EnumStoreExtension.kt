@@ -1,3 +1,4 @@
+@file:Suppress("unused")
 package id.mohekkus.enumstore
 
 import androidx.datastore.preferences.core.Preferences
@@ -12,10 +13,8 @@ import id.mohekkus.enumstore.EnumStore.Companion.instance
 
 object EnumStoreExtension {
 
-    fun <T> get(name: Preferences.Key<T>): T? = instance?.get(name)
-
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified R> getEnumPreferenceKey(name: String): Preferences.Key<R>  {
+    inline fun <reified R> getPreferenceKey(name: String): Preferences.Key<R> {
         return when (R::class) {
             String::class -> stringPreferencesKey(name)
             Boolean::class -> booleanPreferencesKey(name)
@@ -28,21 +27,33 @@ object EnumStoreExtension {
             else -> error("Type ${R::class} is not supported")
         } as Preferences.Key<R>
     }
-    
+
     inline fun <reified T, reified R> T.get(
-        defaultValue: R
+        defaultValue: R,
     ): R where T : Enum<T>, T : EnumStoreOption =
-        instance?.get(
-            getEnumPreferenceKey<R>(name)
+        instance?.block(
+            getPreferenceKey<R>(name)
         ) ?: defaultValue
 
+    inline fun <reified T, reified R : Any> T.get(
+        typeOf: EnumStoreType<R>,
+        crossinline callback: (R) -> Unit
+    ) where T : Enum<T>, T : EnumStoreOption {
+        val value = instance?.block(
+            typeOf.getKey(name)
+        ) ?: typeOf.defaultValue
+        callback(value)
+    }
 
-//    inline fun <reified T, reified R> T.set(
-//        value: R
-//    ) where T : Enum<T>, T : EnumStoreOption =
-//        instance?.edit(getEnumStoreKey<T, R>(), value)
-//
-//    inline fun <reified T> T.erase() where T : Enum<T>, T : EnumStoreOption =
-//        instance?.erase(getEnumStoreKey<T, R>())
+
+    inline fun <reified T, reified R> T.set(
+        value: R
+    ) where T : Enum<T>, T : EnumStoreOption =
+        instance?.edit(getPreferenceKey(name), value)
+
+    inline fun <reified T, reified R : Any> T.erase(
+        typeOf: EnumStoreType<R>,
+    ) where T : Enum<T>, T : EnumStoreOption =
+        instance?.erase(typeOf.getKey(name))
 
 }
