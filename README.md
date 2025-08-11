@@ -1,5 +1,7 @@
 # EnumStore – Clean Preferences with Kotlin Enums
 
+⚠️ Early stage — not production-ready
+
 **EnumStore** is a Kotlin utility for managing stored preferences or settings using `enum class` entries as keys — no raw strings, no context passing, and full type safety.  
 It uses Kotlin `inline` functions with reified generics for minimal overhead and avoids sealed class complexity when enums are enough.
 
