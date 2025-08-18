@@ -65,7 +65,7 @@ Settings.REMEMBER_ME.get(EnumStoreType.TypeBoolean) { remember ->
 Settings.REMEMBER_ME.erase(EnumStoreType.TypeBoolean)
 ```
 
-How to use library in [Jetpack Compose Environment](https://github.com/Mohekkus/EnumStore/blob/master/app/src/main/java/id/mohekkus/example/MainActivity.kt)
+How to use library with [Jetpack Compose](https://github.com/Mohekkus/EnumStore/blob/master/app/src/main/java/id/mohekkus/example/MainActivity.kt)
 
 ---
 
