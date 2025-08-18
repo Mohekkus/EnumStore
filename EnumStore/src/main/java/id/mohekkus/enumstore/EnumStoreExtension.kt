@@ -10,6 +10,8 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import id.mohekkus.enumstore.EnumStore.Companion.instance
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 object EnumStoreExtension {
 
@@ -31,7 +33,7 @@ object EnumStoreExtension {
     inline fun <reified T, reified R> T.get(
         defaultValue: R,
     ): R where T : Enum<T>, T : EnumStoreOption =
-        instance?.block(
+        instance.block(
             getPreferenceKey<R>(name)
         ) ?: defaultValue
 
@@ -39,21 +41,37 @@ object EnumStoreExtension {
         typeOf: EnumStoreType<R>,
         crossinline callback: (R) -> Unit
     ) where T : Enum<T>, T : EnumStoreOption {
-        val value = instance?.block(
+        val value = instance.block(
             typeOf.getKey(name)
         ) ?: typeOf.defaultValue
         callback(value)
+    }
+
+    inline fun <reified T, reified R : Any> T.asFlow(
+        typeOf: EnumStoreType<R>
+    ): Flow<R> where T : Enum<T>, T : EnumStoreOption {
+        return instance.async(
+            typeOf.getKey(name), typeOf.defaultValue
+        )
+    }
+
+    inline fun <reified T, reified R : Any> T.asStateFlow(
+        typeOf: EnumStoreType<R>
+    ): StateFlow<R> where T : Enum<T>, T : EnumStoreOption {
+        return instance.state(
+            typeOf.getKey(name), typeOf.defaultValue
+        )
     }
 
 
     inline fun <reified T, reified R> T.set(
         value: R
     ) where T : Enum<T>, T : EnumStoreOption =
-        instance?.edit(getPreferenceKey(name), value)
+        instance.edit(getPreferenceKey(name), value)
 
     inline fun <reified T, reified R : Any> T.erase(
         typeOf: EnumStoreType<R>,
     ) where T : Enum<T>, T : EnumStoreOption =
-        instance?.erase(typeOf.getKey(name))
+        instance.erase(typeOf.getKey(name))
 
 }
