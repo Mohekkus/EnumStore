@@ -4,7 +4,7 @@ import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-interface EnumStoreImpl {
+internal interface EnumStoreImpl {
     // Synchronous
     fun <T> block(name: Preferences.Key<T>): T?
 

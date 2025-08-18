@@ -34,10 +34,6 @@ class EnumStore(context: Context, storageName: String) : BaseDatastore(context, 
     override val setting: DataStore<Preferences>
         get() = super.setting
 
-    fun interface EnumStoreScoped {
-        suspend fun invoke()
-    }
-
     private fun getMutablePreferences(operations: (MutablePreferences) -> Unit) {
         asyncLaunch {
             setting.edit {
