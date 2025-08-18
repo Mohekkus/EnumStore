@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import id.mohekkus.enumstore.EnumStore.EnumStoreScoped
+import androidx.datastore.preferences.core.MutablePreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +16,7 @@ open class BaseDatastore(context: Context, keyName: String) {
     private val Context._datastore: DataStore<Preferences> by preferencesDataStore(keyName)
     open val setting = context._datastore
 
-    protected fun asyncLaunch(callback: EnumStoreScoped) {
+    protected fun asyncLaunch(callback: suspend () -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             callback.invoke()
         }

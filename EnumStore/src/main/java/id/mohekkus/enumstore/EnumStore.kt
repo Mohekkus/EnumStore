@@ -6,8 +6,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 
 class EnumStore(context: Context, storageName: String) : BaseDatastore(context, storageName),
@@ -17,10 +22,8 @@ class EnumStore(context: Context, storageName: String) : BaseDatastore(context, 
         private const val DEFAULT_KEY_NAME = "Settings"
 
         private lateinit var _instance: EnumStore
-        val EnumStoreExtension.instance: EnumStore?
-            get() = if (this@Companion::_instance.isInitialized)
-                null
-            else _instance
+        val EnumStoreExtension.instance: EnumStore
+            get() = _instance
 
         fun create(context: Context, keyName: String = DEFAULT_KEY_NAME) {
             if (!::_instance.isInitialized)
@@ -30,10 +33,6 @@ class EnumStore(context: Context, storageName: String) : BaseDatastore(context, 
 
     override val setting: DataStore<Preferences>
         get() = super.setting
-
-    fun interface EnumStoreScoped {
-        suspend fun invoke()
-    }
 
     private fun getMutablePreferences(operations: (MutablePreferences) -> Unit) {
         asyncLaunch {
@@ -48,7 +47,17 @@ class EnumStore(context: Context, storageName: String) : BaseDatastore(context, 
             getDataFlow(name).firstOrNull()
         }
 
-    override fun <T> async(name: Preferences.Key<T>): Flow<T?> = getDataFlow(name)
+    override fun <T> async(name: Preferences.Key<T>, defaultValue: T): Flow<T> =
+        getDataFlow(name)
+            .map { it ?: defaultValue }
+
+    override fun <T> state(name: Preferences.Key<T>, defaultValue: T): StateFlow<T> =
+        async(name, defaultValue)
+            .stateIn(
+                CoroutineScope(Dispatchers.IO),
+                initialValue = defaultValue,
+                started = kotlinx.coroutines.flow.SharingStarted.Lazily
+            )
 
     override fun <T> edit(name: Preferences.Key<T>, value: T) {
         getMutablePreferences {
