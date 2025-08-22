@@ -2,7 +2,6 @@
 package id.mohekkus.enumstore
 
 import id.mohekkus.enumstore.EnumStore.Companion.instance
-import id.mohekkus.enumstore.EnumStoreType.Companion.getTypeFromValue
 import id.mohekkus.enumstore.EnumStoreType.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

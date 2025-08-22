@@ -14,9 +14,14 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
+import java.io.File
 
-class EnumStore(context: Context, storageName: String) : BaseDatastore(context, storageName),
-    EnumStoreImpl {
+class EnumStore(context: Context, storageName: String) : BaseDatastore(context, storageName), EnumStoreImpl, EnumStorePreferenceInterface {
+
+    private val registry = EnumStorePreferencesRegistry
+        .also {
+            it.setInterface(this@EnumStore)
+        }
 
     companion object {
         private const val DEFAULT_KEY_NAME = "Settings"
@@ -75,6 +80,10 @@ class EnumStore(context: Context, storageName: String) : BaseDatastore(context, 
         getMutablePreferences {
             it.clear()
         }
+    }
+
+    override fun onGeneratingFile(key: String): File {
+        TODO("Generating Preference File")
     }
 
 }
