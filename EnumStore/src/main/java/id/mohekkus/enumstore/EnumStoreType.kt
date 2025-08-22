@@ -15,7 +15,27 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 sealed class EnumStoreType<T : Any>(
     var defaultValue: T
 ) {
+    private var editValue: T? = null
+
     abstract fun getKey(keyName: String): Preferences.Key<T>
+
+    @Suppress("UNCHECKED_CAST")
+    companion object {
+        inline fun <reified R: Any> R.getTypeFromValue(): EnumStoreType<R> {
+            return when (R::class) {
+                String::class -> TypeString
+                Boolean::class -> TypeBoolean
+                Set::class -> TypeStringSet
+                Int::class -> TypeInt
+                Double::class -> TypeDouble
+                Long::class -> TypeLong
+                ByteArray::class -> TypeByteArray
+                Float::class -> TypeFloat
+
+                else -> error("Type ${R::class} is not supported")
+            } as EnumStoreType<R>
+        }
+    }
 
     data object TypeString : EnumStoreType<String>("") {
         override fun getKey(keyName: String): Preferences.Key<String> =
