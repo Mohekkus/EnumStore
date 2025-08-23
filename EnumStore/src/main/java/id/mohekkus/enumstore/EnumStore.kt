@@ -2,78 +2,74 @@
 package id.mohekkus.enumstore
 
 import android.content.Context
+import androidx.annotation.WorkerThread
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
+import kotlin.reflect.KClass
 
-class EnumStore(context: Context, storageName: String) : BaseDatastore(context, storageName),
-    EnumStoreImpl {
+class EnumStore(context: Context) : BaseDatastore() {
+
+    private val registry by lazy {
+        EnumStorePreferencesRegistry(context)
+    }
 
     companion object {
-        private const val DEFAULT_KEY_NAME = "Settings"
-
         private lateinit var _instance: EnumStore
         val EnumStoreExtension.instance: EnumStore
             get() = _instance
 
-        fun create(context: Context, keyName: String = DEFAULT_KEY_NAME) {
+        fun create(context: Context) {
             if (!::_instance.isInitialized)
-                _instance = EnumStore(context, keyName)
+                _instance = EnumStore(context)
         }
     }
 
-    override val setting: DataStore<Preferences>
-        get() = super.setting
+    fun <T> from(kClass: KClass<T>): EnumStoreImplInternal where T: Enum<*> {
+        return EnumStoreImplInternal(registry.get(kClass.simpleName.toString()))
+    }
 
-    private fun getMutablePreferences(operations: (MutablePreferences) -> Unit) {
-        asyncLaunch {
-            setting.edit {
-                operations.invoke(it)
+    inner class EnumStoreImplInternal(private val dataStore: DataStore<Preferences>) : EnumStoreImpl {
+
+        @WorkerThread
+        override fun <T> block(name: Preferences.Key<T>): T? =
+            runBlocking {
+                dataStore.getDataFlow(name).firstOrNull()
+            }
+
+        override fun <T> async(name: Preferences.Key<T>, defaultValue: T): Flow<T> =
+            dataStore.getDataFlow(name)
+                .map { it ?: defaultValue }
+
+        override fun <T> state(name: Preferences.Key<T>, defaultValue: T): StateFlow<T> =
+            async(name, defaultValue)
+                .stateIn(
+                    registry.staticScope,
+                    initialValue = defaultValue,
+                    started = kotlinx.coroutines.flow.SharingStarted.Lazily
+                )
+
+        override fun <T> edit(name: Preferences.Key<T>, value: T) {
+            dataStore.getMutablePreferences {
+                it[name] = value
             }
         }
-    }
 
-    override fun <T> block(name: Preferences.Key<T>): T? =
-        runBlocking {
-            getDataFlow(name).firstOrNull()
+        override fun <T> erase(name: Preferences.Key<T>) {
+            dataStore.getMutablePreferences {
+                it.remove(name)
+            }
         }
 
-    override fun <T> async(name: Preferences.Key<T>, defaultValue: T): Flow<T> =
-        getDataFlow(name)
-            .map { it ?: defaultValue }
-
-    override fun <T> state(name: Preferences.Key<T>, defaultValue: T): StateFlow<T> =
-        async(name, defaultValue)
-            .stateIn(
-                CoroutineScope(Dispatchers.IO),
-                initialValue = defaultValue,
-                started = kotlinx.coroutines.flow.SharingStarted.Lazily
-            )
-
-    override fun <T> edit(name: Preferences.Key<T>, value: T) {
-        getMutablePreferences {
-            it[name] = value
-        }
-    }
-
-    override fun <T> erase(name: Preferences.Key<T>) {
-        getMutablePreferences {
-            it.remove(name)
-        }
-    }
-
-    override fun purge() {
-        getMutablePreferences {
-            it.clear()
+        override fun purge() {
+            dataStore.getMutablePreferences {
+                it.clear()
+            }
         }
     }
 
