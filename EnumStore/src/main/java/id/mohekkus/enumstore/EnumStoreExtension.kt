@@ -23,12 +23,13 @@ object EnumStoreExtension {
             else -> error("Type ${R::class} is not supported")
         } as EnumStoreType<R>
     }
+    
 
     inline fun <reified T, reified R: Any> T.get(
         defaultValue: R,
     ): R where T : Enum<T>, T : EnumStoreOption {
         val typeOf = defaultValue.getTypeFromValue()
-        return instance.block(
+        return instance.from(this::class).block(
             typeOf.getKey(name)
         ) ?: defaultValue
     }
@@ -37,7 +38,7 @@ object EnumStoreExtension {
         typeOf: EnumStoreType<R>,
         crossinline callback: (R) -> Unit
     ) where T : Enum<T>, T : EnumStoreOption {
-        val value = instance.block(
+        val value = instance.from(this::class).block(
             typeOf.getKey(name)
         ) ?: typeOf.defaultValue
         callback(value)
@@ -46,7 +47,7 @@ object EnumStoreExtension {
     inline fun <reified T, reified R : Any> T.asFlow(
         typeOf: EnumStoreType<R>
     ): Flow<R> where T : Enum<T>, T : EnumStoreOption {
-        return instance.async(
+        return instance.from(this::class).async(
             typeOf.getKey(name), typeOf.defaultValue
         )
     }
@@ -54,7 +55,7 @@ object EnumStoreExtension {
     inline fun <reified T, reified R : Any> T.asStateFlow(
         typeOf: EnumStoreType<R>
     ): StateFlow<R> where T : Enum<T>, T : EnumStoreOption {
-        return instance.state(
+        return instance.from(this::class).state(
             typeOf.getKey(name), typeOf.defaultValue
         )
     }
@@ -62,14 +63,13 @@ object EnumStoreExtension {
     inline fun <reified T, reified R: Any> T.set(
         value: R
     ) where T : Enum<T>, T : EnumStoreOption {
-        with(value.getTypeFromValue()) {
-            instance.edit(getKey(name), value)
-        }
+        val typeOf = value.getTypeFromValue()
+        instance.from(this@set::class).edit(typeOf.getKey(name), value)
     }
 
     inline fun <reified T, reified R : Any> T.erase(
         typeOf: EnumStoreType<R>,
     ) where T : Enum<T>, T : EnumStoreOption =
-        instance.erase(typeOf.getKey(name))
+        instance.from(this::class).erase(typeOf.getKey(name))
 
 }
