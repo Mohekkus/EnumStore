@@ -2,74 +2,62 @@
 package id.mohekkus.enumstore
 
 import id.mohekkus.enumstore.EnumStore.Companion.instance
-import id.mohekkus.enumstore.EnumStoreType.*
+import id.mohekkus.enumstore.EnumStoreType.Companion.getTypeFromValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 object EnumStoreExtension {
 
-    @Suppress("UNCHECKED_CAST")
-    inline fun <reified R: Any> R.getTypeFromValue(): EnumStoreType<R> {
-        return when (R::class) {
-            String::class -> TypeString
-            Boolean::class -> TypeBoolean
-            Set::class -> TypeStringSet
-            Int::class -> TypeInt
-            Double::class -> TypeDouble
-            Long::class -> TypeLong
-            ByteArray::class -> TypeByteArray
-            Float::class -> TypeFloat
-
-            else -> error("Type ${R::class} is not supported")
-        } as EnumStoreType<R>
-    }
-    
-
     inline fun <reified T, reified R: Any> T.get(
         defaultValue: R,
-    ): R where T : Enum<T>, T : EnumStoreOption {
-        val typeOf = defaultValue.getTypeFromValue()
-        return instance.from(this::class).block(
-            typeOf.getKey(name)
-        ) ?: defaultValue
+    ): R where T : Enum<T>, T : EnumStoreMarker {
+        with(defaultValue.getTypeFromValue()) {
+            return instance.from(this@get).block(
+                getKey(name)
+            ) ?: defaultValue
+        }
     }
 
     inline fun <reified T, reified R : Any> T.get(
         typeOf: EnumStoreType<R>,
         crossinline callback: (R) -> Unit
-    ) where T : Enum<T>, T : EnumStoreOption {
-        val value = instance.from(this::class).block(
-            typeOf.getKey(name)
-        ) ?: typeOf.defaultValue
-        callback(value)
+    ) where T : Enum<T>, T : EnumStoreMarker {
+        callback(
+            instance.from(this).block(
+                typeOf.getKey(name)
+            ) ?: typeOf.defaultValue
+        )
     }
 
     inline fun <reified T, reified R : Any> T.asFlow(
         typeOf: EnumStoreType<R>
-    ): Flow<R> where T : Enum<T>, T : EnumStoreOption {
-        return instance.from(this::class).async(
+    ): Flow<R> where T : Enum<T>, T : EnumStoreMarker {
+        return instance.from(this).async(
             typeOf.getKey(name), typeOf.defaultValue
         )
     }
 
     inline fun <reified T, reified R : Any> T.asStateFlow(
         typeOf: EnumStoreType<R>
-    ): StateFlow<R> where T : Enum<T>, T : EnumStoreOption {
-        return instance.from(this::class).state(
+    ): StateFlow<R> where T : Enum<T>, T : EnumStoreMarker {
+        return instance.from(this).state(
             typeOf.getKey(name), typeOf.defaultValue
         )
     }
 
     inline fun <reified T, reified R: Any> T.set(
         value: R
-    ) where T : Enum<T>, T : EnumStoreOption {
-        val typeOf = value.getTypeFromValue()
-        instance.from(this@set::class).edit(typeOf.getKey(name), value)
+    ) where T : Enum<T>, T : EnumStoreMarker {
+        with(value.getTypeFromValue()) {
+            instance.from(this@set)
+                .edit(getKey(name), value)
+        }
     }
 
     inline fun <reified T, reified R : Any> T.erase(
         typeOf: EnumStoreType<R>,
-    ) where T : Enum<T>, T : EnumStoreOption =
-        instance.from(this::class).erase(typeOf.getKey(name))
+    ) where T : Enum<T>, T : EnumStoreMarker =
+        instance.from(this)
+            .erase(typeOf.getKey(name))
 
 }

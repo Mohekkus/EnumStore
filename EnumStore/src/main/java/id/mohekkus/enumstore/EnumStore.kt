@@ -2,10 +2,12 @@
 package id.mohekkus.enumstore
 
 import android.content.Context
+import android.provider.Telephony.Mms.Part
 import androidx.annotation.WorkerThread
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -30,8 +32,18 @@ class EnumStore(context: Context) : BaseDatastore() {
         }
     }
 
-    fun <T> from(kClass: KClass<T>): EnumStoreImplInternal where T: Enum<*> {
-        return EnumStoreImplInternal(registry.get(kClass.simpleName.toString()))
+    fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker {
+        val name = when (markedEnum) {
+            is EnumStoreShared -> {
+                markedEnum::class.annotations.filterIsInstance<PartOf>().firstOrNull()?.let {
+                    it.collection.simpleName
+                } ?: markedEnum::class.simpleName
+            }
+            // markedEnum.getSharedTarget()?.simpleName ?: markedEnum::class.simpleName
+            else -> markedEnum::class.simpleName
+        }
+
+        return EnumStoreImplInternal(registry.get(name.toString()))
     }
 
     inner class EnumStoreImplInternal(private val dataStore: DataStore<Preferences>) : EnumStoreImpl {
@@ -51,7 +63,7 @@ class EnumStore(context: Context) : BaseDatastore() {
                 .stateIn(
                     registry.staticScope,
                     initialValue = defaultValue,
-                    started = kotlinx.coroutines.flow.SharingStarted.Lazily
+                    started = SharingStarted.Lazily
                 )
 
         override fun <T> edit(name: Preferences.Key<T>, value: T) {
