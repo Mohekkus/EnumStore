@@ -35,9 +35,8 @@ class EnumStore(context: Context) : BaseDatastore() {
     fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker {
         val name = when (markedEnum) {
             is EnumStoreShared -> {
-                markedEnum::class.annotations.filterIsInstance<PartOf>().firstOrNull()?.let {
-                    it.collection.simpleName
-                } ?: markedEnum::class.simpleName
+                markedEnum::class.java.annotations.filterIsInstance<PartOf>().firstOrNull()?.collection?.simpleName
+                    ?: markedEnum::class.simpleName
             }
             // markedEnum.getSharedTarget()?.simpleName ?: markedEnum::class.simpleName
             else -> markedEnum::class.simpleName
