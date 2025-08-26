@@ -72,56 +72,58 @@ How to use library with [Jetpack Compose](https://github.com/Mohekkus/EnumStore/
 ## 🛠 Core API
 
 ```kotlin
-    @Suppress("UNCHECKED_CAST")
-    inline fun <reified R> getPreferenceKey(name: String): Preferences.Key<R> {
-        return when (R::class) {
-            String::class -> stringPreferencesKey(name)
-            Boolean::class -> booleanPreferencesKey(name)
-            Set::class -> stringSetPreferencesKey(name)
-            Int::class -> intPreferencesKey(name)
-            Double::class -> doublePreferencesKey(name)
-            Long::class -> longPreferencesKey(name)
-            ByteArray::class -> byteArrayPreferencesKey(name)
-            else -> error("Type ${R::class} is not supported")
-        } as Preferences.Key<R>
+    inline fun <reified T, reified R: Any> T.get(
+        defaultValue: R,
+    ): R where T : Enum<T>, T : EnumStoreMarker {
+        with(defaultValue.getTypeFromValue()) {
+            return instance.from(this@get).block(
+                getKey(name)
+            ) ?: defaultValue
+        }
     }
-    
-    inline fun <reified T, reified R> T.get(defaultValue: R): R
-        where T : Enum<T>, T : EnumStoreOption =
-        instance?.block(getPreferenceKey<R>(name)) ?: defaultValue
-    
-    @Suppress("UNCHECKED_CAST")
+
     inline fun <reified T, reified R : Any> T.get(
         typeOf: EnumStoreType<R>,
         crossinline callback: (R) -> Unit
-    ) where T : Enum<T>, T : EnumStoreOption {
-        val value = instance?.block(typeOf.getKey(name)) ?: typeOf.defaultValue
-        callback(value)
+    ) where T : Enum<T>, T : EnumStoreMarker {
+        callback(
+            instance.from(this).block(
+                typeOf.getKey(name)
+            ) ?: typeOf.defaultValue
+        )
     }
-    
+
     inline fun <reified T, reified R : Any> T.asFlow(
         typeOf: EnumStoreType<R>
-    ): Flow<R> where T : Enum<T>, T : EnumStoreOption {
-        return instance.async(
+    ): Flow<R> where T : Enum<T>, T : EnumStoreMarker {
+        return instance.from(this).async(
             typeOf.getKey(name), typeOf.defaultValue
         )
     }
-    
+
     inline fun <reified T, reified R : Any> T.asStateFlow(
         typeOf: EnumStoreType<R>
-    ): StateFlow<R> where T : Enum<T>, T : EnumStoreOption {
-        return instance.state(
+    ): StateFlow<R> where T : Enum<T>, T : EnumStoreMarker {
+        return instance.from(this).state(
             typeOf.getKey(name), typeOf.defaultValue
         )
     }
-    
-    inline fun <reified T, reified R> T.set(value: R)
-        where T : Enum<T>, T : EnumStoreOption =
-        instance?.edit(getPreferenceKey(name), value)
-    
-    inline fun <reified T, reified R : Any> T.erase(typeOf: EnumStoreType<R>)
-        where T : Enum<T>, T : EnumStoreOption =
-        instance?.erase(typeOf.getKey(name))
+
+    inline fun <reified T, reified R: Any> T.set(
+        value: R
+    ) where T : Enum<T>, T : EnumStoreMarker {
+        with(value.getTypeFromValue()) {
+            instance.from(this@set)
+                .edit(getKey(name), value)
+        }
+    }
+
+    inline fun <reified T, reified R : Any> T.erase(
+        typeOf: EnumStoreType<R>,
+    ) where T : Enum<T>, T : EnumStoreMarker =
+        instance.from(this)
+            .erase(typeOf.getKey(name))
+
 ```
 
 ---
