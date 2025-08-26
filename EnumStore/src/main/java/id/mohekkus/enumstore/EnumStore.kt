@@ -40,7 +40,7 @@ class EnumStore(context: Context) : BaseDatastore() {
         }
     }
 
-    private fun <T> getDataStoreName(markedEnum: T): String where T : Enum<*>, T : EnumStoreMarker =
+    private fun <T> getDataStoreName(markedEnum: T): String where T : Enum<*>, T : EnumStoreCollection =
         when (markedEnum) {
             is EnumStoreShared -> {
                 markedEnum::class.java.annotations.filterIsInstance<PartOf>()
@@ -50,7 +50,7 @@ class EnumStore(context: Context) : BaseDatastore() {
             else -> markedEnum::class.simpleName
         }.toString()
 
-    fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker =
+    fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreCollection =
         EnumStoreImplInternal(registry.get(getDataStoreName(markedEnum).toString()))
 
     inner class EnumStoreImplInternal(private val dataStore: DataStore<Preferences>) : EnumStoreImpl {
