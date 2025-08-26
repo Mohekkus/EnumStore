@@ -2,7 +2,6 @@
 package id.mohekkus.enumstore
 
 import android.content.Context
-import android.provider.Telephony.Mms.Part
 import androidx.annotation.WorkerThread
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -13,10 +12,14 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
-import kotlin.reflect.KClass
 
 class EnumStore(context: Context) : BaseDatastore() {
 
+    constructor(context: Context, storeNameObfuscation: StoreNameObfuscation) : this(context) {
+        registry.storeNameObfuscation = storeNameObfuscation
+    }
+
+    private lateinit var storeNameObfuscation: StoreNameObfuscation
     private val registry by lazy {
         EnumStorePreferencesRegistry(context)
     }
@@ -30,20 +33,25 @@ class EnumStore(context: Context) : BaseDatastore() {
             if (!::_instance.isInitialized)
                 _instance = EnumStore(context)
         }
+
+        fun create(context: Context, storeNameObfuscation: StoreNameObfuscation) {
+            if (!::_instance.isInitialized)
+                _instance = EnumStore(context, storeNameObfuscation)
+        }
     }
 
-    fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker {
-        val name = when (markedEnum) {
+    private fun <T> getDataStoreName(markedEnum: T): String where T : Enum<*>, T : EnumStoreMarker =
+        when (markedEnum) {
             is EnumStoreShared -> {
-                markedEnum::class.java.annotations.filterIsInstance<PartOf>().firstOrNull()?.collection?.simpleName
+                markedEnum::class.java.annotations.filterIsInstance<PartOf>()
+                    .firstOrNull()?.collection?.simpleName
                     ?: markedEnum::class.simpleName
             }
-            // markedEnum.getSharedTarget()?.simpleName ?: markedEnum::class.simpleName
             else -> markedEnum::class.simpleName
-        }
+        }.toString()
 
-        return EnumStoreImplInternal(registry.get(name.toString()))
-    }
+    fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker =
+        EnumStoreImplInternal(registry.get(getDataStoreName(markedEnum).toString()))
 
     inner class EnumStoreImplInternal(private val dataStore: DataStore<Preferences>) : EnumStoreImpl {
 
