@@ -83,5 +83,4 @@ class EnumStore(context: Context) : BaseDatastore() {
             }
         }
     }
-
 }

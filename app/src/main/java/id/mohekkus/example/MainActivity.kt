@@ -57,7 +57,7 @@ fun Greeting(name: StateFlow<String>, modifier: Modifier = Modifier) {
         )
         Button(
             onClick = {
-                Variable.GREETING.set("")
+                Variable.GREETING.set("xxx")
             }
         ) {
             Text(text = "Change Greeting")
