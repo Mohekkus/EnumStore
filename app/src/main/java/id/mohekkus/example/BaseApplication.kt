@@ -1,8 +1,7 @@
 package id.mohekkus.example
 
 import android.app.Application
-import android.content.Context
-import id.mohekkus.enumstore.EnumStore
+import id.mohekkus.enumstore.core.EnumStore
 
 class BaseApplication: Application() {
     override fun onCreate() {
