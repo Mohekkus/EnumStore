@@ -36,23 +36,22 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
 
     inline fun <reified T, reified R : Any> T.asFlow(
         typeOf: EnumStoreType<R>
-    ): Flow<R> where T : Enum<T>, T : EnumStoreMarker {
-        return handleSafely(this) {
+    ): Flow<R> where T : Enum<T>, T : EnumStoreMarker =
+        handleSafely(this) {
             async(
                 typeOf.getKey(name), typeOf.defaultValue
             )
         }
-    }
+
 
     inline fun <reified T, reified R : Any> T.asStateFlow(
         typeOf: EnumStoreType<R>
-    ): StateFlow<R> where T : Enum<T>, T : EnumStoreMarker {
-        return handleSafely(this) {
+    ): StateFlow<R> where T : Enum<T>, T : EnumStoreMarker =
+        handleSafely(this) {
             state(
                 typeOf.getKey(name), typeOf.defaultValue
             )
         }
-    }
 
     inline fun <reified T, reified R: Any> T.set(
         value: R
