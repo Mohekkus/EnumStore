@@ -19,6 +19,7 @@ import id.mohekkus.enumstore.EnumStoreExtension
 import id.mohekkus.enumstore.EnumStoreExtension.asStateFlow
 import id.mohekkus.enumstore.EnumStoreExtension.set
 import id.mohekkus.enumstore.EnumStoreType
+import id.mohekkus.enumstore.EnumStoreType.Companion.getKey
 import id.mohekkus.example.storage.Variable
 import id.mohekkus.example.ui.theme.ExampleTheme
 import kotlinx.coroutines.flow.MutableStateFlow

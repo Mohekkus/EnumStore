@@ -15,8 +15,6 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 sealed class EnumStoreType<T : Any>(
     var defaultValue: T
 ) {
-    private var editValue: T? = null
-
     abstract fun getKey(keyName: String): Preferences.Key<T>
 
     companion object {
@@ -35,6 +33,11 @@ sealed class EnumStoreType<T : Any>(
                 else -> error("Type ${R::class} is not supported")
             } as EnumStoreType<R>
         }
+
+        inline fun <reified R: Any> EnumStoreExtension.getKey(
+            defaultValue: R,
+            name: String
+        ) = defaultValue.getTypeFromValue().getKey(name)
     }
 
     data object TypeString : EnumStoreType<String>("") {

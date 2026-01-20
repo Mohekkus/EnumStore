@@ -2,7 +2,6 @@
 package id.mohekkus.enumstore
 
 import android.content.Context
-import android.provider.Telephony.Mms.Part
 import androidx.annotation.WorkerThread
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -13,7 +12,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
-import kotlin.reflect.KClass
 
 class EnumStore(context: Context) : BaseDatastore() {
 
@@ -23,7 +21,7 @@ class EnumStore(context: Context) : BaseDatastore() {
 
     companion object {
         private lateinit var _instance: EnumStore
-        val EnumStoreExtension.instance: EnumStore
+        val EnumStoreExtensionImpl.instance: EnumStore
             get() = _instance
 
         fun create(context: Context) {

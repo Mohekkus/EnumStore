@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 internal interface EnumStoreImpl {
-//    fun from(storageName: String): EnumStore
 
 //    // Synchronous
     fun <T> block(name: Preferences.Key<T>): T?
