@@ -9,7 +9,7 @@ internal interface EnumStoreImpl {
 //    // Synchronous
     fun <T> block(name: Preferences.Key<T>): T?
 
-    fun <T> async(name: Preferences.Key<T>, defaultValue: T): Flow<T?>
+    fun <T> async(name: Preferences.Key<T>, defaultValue: T): Flow<T>
 
     fun <T> state(name: Preferences.Key<T>, defaultValue: T): StateFlow<T>
 

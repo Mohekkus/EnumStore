@@ -1,14 +1,16 @@
 package id.mohekkus.enumstore
 
 import id.mohekkus.enumstore.EnumStore.Companion.instance
+import id.mohekkus.enumstore.operation.EnumStoreOperation
 
-typealias EnumStoreImplementation = EnumStore.EnumStoreImplInternal
 interface EnumStoreExtensionImpl {
 
-    fun <T, R> EnumStoreExtension.handleSafely(
+    fun <T, R: Any> EnumStoreExtension.execute(
         marker: T,
-        callback: EnumStoreImplementation.() -> R
+        callback: EnumStoreOperation.() -> R
     ): R where T : Enum<T>, T : EnumStoreMarker {
-        return instance.from(marker).callback()
+        return EnumStoreOperation(
+            instance.from(marker)
+        ).callback()
     }
 }

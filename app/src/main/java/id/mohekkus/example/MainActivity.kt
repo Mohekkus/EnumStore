@@ -14,17 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import id.mohekkus.enumstore.EnumStore
-import id.mohekkus.enumstore.EnumStoreExtension
 import id.mohekkus.enumstore.EnumStoreExtension.asStateFlow
 import id.mohekkus.enumstore.EnumStoreExtension.set
 import id.mohekkus.enumstore.EnumStoreType
-import id.mohekkus.enumstore.EnumStoreType.Companion.getKey
 import id.mohekkus.example.storage.Variable
 import id.mohekkus.example.ui.theme.ExampleTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
 
 class MainActivity : ComponentActivity() {
 

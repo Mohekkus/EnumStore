@@ -7,15 +7,17 @@ import kotlinx.coroutines.flow.StateFlow
 
 object EnumStoreExtension: EnumStoreExtensionImpl {
 
+    // Artifact
     inline fun <reified T, reified R: Any> T.get(
         defaultValue: R,
     ): R where T : Enum<T>, T : EnumStoreMarker {
-        return handleSafely(
+        return execute(
             this
         ) {
-            block(
-                getKey(defaultValue, name)
-            ) ?: defaultValue
+            safeBlock(
+                getKey(defaultValue, name),
+                defaultValue
+            )
         }
     }
 
@@ -23,13 +25,14 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
         typeOf: EnumStoreType<R>,
         crossinline callback: (R) -> Unit
     ) where T : Enum<T>, T : EnumStoreMarker {
-        handleSafely(
+        execute(
             this
         ) {
             callback(
-                block(
-                    typeOf.getKey(name)
-                ) ?: typeOf.defaultValue
+                safeBlock(
+                    typeOf.getKey(name),
+                    typeOf.defaultValue
+                )
             )
         }
     }
@@ -37,8 +40,8 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R : Any> T.asFlow(
         typeOf: EnumStoreType<R>
     ): Flow<R> where T : Enum<T>, T : EnumStoreMarker =
-        handleSafely(this) {
-            async(
+        execute(this) {
+            safeFlow(
                 typeOf.getKey(name), typeOf.defaultValue
             )
         }
@@ -47,8 +50,8 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R : Any> T.asStateFlow(
         typeOf: EnumStoreType<R>
     ): StateFlow<R> where T : Enum<T>, T : EnumStoreMarker =
-        handleSafely(this) {
-            state(
+        execute(this) {
+            safeState(
                 typeOf.getKey(name), typeOf.defaultValue
             )
         }
@@ -56,15 +59,15 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R: Any> T.set(
         value: R
     ) where T : Enum<T>, T : EnumStoreMarker {
-        handleSafely(this) {
-            edit(getKey(value, name), value)
+        execute(this) {
+            safeEdit(getKey(value, name), value)
         }
     }
 
     inline fun <reified T, reified R : Any> T.erase(
         typeOf: EnumStoreType<R>,
     ) where T : Enum<T>, T : EnumStoreMarker =
-        handleSafely(this) {
-            erase(typeOf.getKey(name))
+        execute(this) {
+            safeErase(typeOf.getKey(name))
         }
 }
