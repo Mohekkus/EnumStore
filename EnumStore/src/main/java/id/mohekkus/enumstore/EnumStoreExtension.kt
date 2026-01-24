@@ -11,7 +11,7 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R: Any> T.get(
         defaultValue: R,
     ): R where T : Enum<T>, T : EnumStoreMarker {
-        return execute(
+        return using(
             this
         ) {
             safeBlock(
@@ -25,7 +25,7 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
         typeOf: EnumStoreType<R>,
         crossinline callback: (R) -> Unit
     ) where T : Enum<T>, T : EnumStoreMarker {
-        execute(
+        using(
             this
         ) {
             callback(
@@ -40,7 +40,7 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R : Any> T.asFlow(
         typeOf: EnumStoreType<R>
     ): Flow<R> where T : Enum<T>, T : EnumStoreMarker =
-        execute(this) {
+        using(this) {
             safeFlow(
                 typeOf.getKey(name), typeOf.defaultValue
             )
@@ -50,7 +50,7 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R : Any> T.asStateFlow(
         typeOf: EnumStoreType<R>
     ): StateFlow<R> where T : Enum<T>, T : EnumStoreMarker =
-        execute(this) {
+        using(this) {
             safeState(
                 typeOf.getKey(name), typeOf.defaultValue
             )
@@ -59,7 +59,7 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R: Any> T.set(
         value: R
     ) where T : Enum<T>, T : EnumStoreMarker {
-        execute(this) {
+        using(this) {
             safeEdit(getKey(value, name), value)
         }
     }
@@ -67,7 +67,7 @@ object EnumStoreExtension: EnumStoreExtensionImpl {
     inline fun <reified T, reified R : Any> T.erase(
         typeOf: EnumStoreType<R>,
     ) where T : Enum<T>, T : EnumStoreMarker =
-        execute(this) {
+        using(this) {
             safeErase(typeOf.getKey(name))
         }
 }

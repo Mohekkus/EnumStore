@@ -2,9 +2,9 @@ package id.mohekkus.enumstore.logging
 
 import id.mohekkus.enumstore.operation.OperationType
 
-abstract class EnumStoreLogging {
+internal interface EnumStoreLogging {
 
-    internal fun <T: Any> handle(
+    fun <T: Any> handle(
         type: OperationType,
         operation: () -> T
     ): T {

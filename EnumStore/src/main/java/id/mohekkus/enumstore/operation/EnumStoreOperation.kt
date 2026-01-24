@@ -6,13 +6,7 @@ import id.mohekkus.enumstore.logging.EnumStoreLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-class EnumStoreOperation : EnumStoreLogging, EnumStoreOperationImpl {
-
-    internal constructor (
-        impl: EnumStoreImpl
-    ) { this.impl = impl }
-
-    private val impl: EnumStoreImpl
+class EnumStoreOperation internal constructor(private val impl: EnumStoreImpl) : EnumStoreOperationImpl, EnumStoreLogging {
 
     override fun <T : Any> safeBlock(
         key: Preferences.Key<T>,
