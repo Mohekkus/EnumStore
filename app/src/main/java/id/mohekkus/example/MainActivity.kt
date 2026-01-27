@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 class MainActivity : ComponentActivity() {
 
     private val greeting by lazy {
-        Variable.GREETING.asStateFlow(EnumStoreType.TypeString)
+        Variable.GREETING.asStateFlow(EnumStoreType.TypeString(""))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +54,7 @@ fun Greeting(name: StateFlow<String>, modifier: Modifier = Modifier) {
         )
         Button(
             onClick = {
-                Variable.GREETING.set("")
+                Variable.GREETING.set(EnumStoreType.TypeString(""),"asdasd")
             }
         ) {
             Text(text = "Change Greeting")

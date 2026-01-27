@@ -3,7 +3,7 @@ package id.mohekkus.enumstore
 import id.mohekkus.enumstore.core.EnumStore.Companion.instance
 import id.mohekkus.enumstore.operation.EnumStoreOperation
 
-internal interface EnumStoreExtensionImpl {
+interface EnumStoreExtensionImpl {
 
     fun <T, R: Any> using(
         marker: T,

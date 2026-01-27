@@ -1,81 +1,75 @@
 @file:Suppress("unused")
 package id.mohekkus.enumstore
 
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.byteArrayPreferencesKey
-import androidx.datastore.preferences.core.doublePreferencesKey
-import androidx.datastore.preferences.core.floatPreferencesKey
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.core.stringSetPreferencesKey
+import androidx.datastore.preferences.core.*
 
+sealed interface EnumStoreType {
 
-sealed class EnumStoreType<T : Any>(
-    var defaultValue: T
-) {
-    abstract fun getKey(keyName: String): Preferences.Key<T>
-
-    companion object {
-        @Suppress("UNCHECKED_CAST")
-        inline fun <reified R: Any> R.getTypeFromValue(): EnumStoreType<R> {
-            return when (this::class) {
-                String::class -> TypeString
-                Boolean::class -> TypeBoolean
-                Set::class -> TypeStringSet
-                Int::class -> TypeInt
-                Double::class -> TypeDouble
-                Long::class -> TypeLong
-                ByteArray::class -> TypeByteArray
-                Float::class -> TypeFloat
-
-                else -> error("Type ${R::class} is not supported")
-            } as EnumStoreType<R>
-        }
-
-        inline fun <reified R: Any> EnumStoreExtension.getKey(
-            defaultValue: R,
-            name: String
-        ) = defaultValue.getTypeFromValue().getKey(name)
-    }
-
-    data object TypeString : EnumStoreType<String>("") {
+    data class TypeString(
+        override val defaultValue: String = ""
+    ) : EnumStoreTypeImpl<String>() {
         override fun getKey(keyName: String): Preferences.Key<String> =
             stringPreferencesKey(keyName)
     }
 
-    data object TypeInt : EnumStoreType<Int>(-1) {
+    data class TypeInt(
+        override val defaultValue: Int = -1
+    ) : EnumStoreTypeImpl<Int>() {
         override fun getKey(keyName: String): Preferences.Key<Int> =
             intPreferencesKey(keyName)
     }
 
-    data object TypeLong : EnumStoreType<Long>(-1L) {
+    data class TypeLong(
+        override val defaultValue: Long = -1L
+    ) : EnumStoreTypeImpl<Long>() {
         override fun getKey(keyName: String): Preferences.Key<Long> =
             longPreferencesKey(keyName)
     }
 
-    data object TypeBoolean : EnumStoreType<Boolean>(false) {
+    data class TypeBoolean(
+        override val defaultValue: Boolean = false
+    ) : EnumStoreTypeImpl<Boolean>() {
         override fun getKey(keyName: String): Preferences.Key<Boolean> =
             booleanPreferencesKey(keyName)
     }
 
-    data object TypeDouble : EnumStoreType<Double>(-1.0) {
+    data class TypeDouble(
+        override val defaultValue: Double = -1.0
+    ) : EnumStoreTypeImpl<Double>() {
         override fun getKey(keyName: String): Preferences.Key<Double> =
             doublePreferencesKey(keyName)
     }
 
-    data object TypeFloat : EnumStoreType<Float>(-1f) {
+    data class TypeFloat(
+        override val defaultValue: Float = -1f
+    ) : EnumStoreTypeImpl<Float>() {
         override fun getKey(keyName: String): Preferences.Key<Float> =
             floatPreferencesKey(keyName)
     }
 
-    data object TypeByteArray : EnumStoreType<ByteArray>(byteArrayOf()) {
+    data class TypeByteArray(
+        override val defaultValue: ByteArray = byteArrayOf()
+    ) : EnumStoreTypeImpl<ByteArray>() {
         override fun getKey(keyName: String): Preferences.Key<ByteArray> =
             byteArrayPreferencesKey(keyName)
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as TypeByteArray
+
+            return defaultValue.contentEquals(other.defaultValue)
+        }
+
+        override fun hashCode(): Int {
+            return defaultValue.contentHashCode()
+        }
     }
 
-    data object TypeStringSet : EnumStoreType<Set<String>>(emptySet()) {
+    data class TypeStringSet(
+        override val defaultValue: Set<String> = emptySet()
+    ) : EnumStoreTypeImpl<Set<String>>() {
         override fun getKey(keyName: String): Preferences.Key<Set<String>> =
             stringSetPreferencesKey(keyName)
     }
