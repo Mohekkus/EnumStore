@@ -1,4 +1,4 @@
-package id.mohekkus.enumstore
+package id.mohekkus.enumstore.core
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

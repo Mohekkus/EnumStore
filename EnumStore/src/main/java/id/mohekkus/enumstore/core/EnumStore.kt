@@ -1,11 +1,17 @@
 @file:Suppress("unused")
-package id.mohekkus.enumstore
+package id.mohekkus.enumstore.core
 
 import android.content.Context
-import android.provider.Telephony.Mms.Part
 import androidx.annotation.WorkerThread
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import id.mohekkus.enumstore.EnumStoreMarker
+import id.mohekkus.enumstore.EnumStorePreferencesRegistry
+import id.mohekkus.enumstore.EnumStoreShared
+import id.mohekkus.enumstore.PartOf
+import id.mohekkus.enumstore.error.ErrorHandler
+import id.mohekkus.enumstore.logging.EnumStoreLoggerImpl
+import id.mohekkus.enumstore.logging.NoopLogger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,26 +19,33 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
-import kotlin.reflect.KClass
 
-class EnumStore(context: Context) : BaseDatastore() {
+class EnumStore(
+    context: Context,
+    logger: EnumStoreLoggerImpl
+) : BaseDatastore() {
 
+    private val handler by lazy {
+        ErrorHandler(logger)
+    }
     private val registry by lazy {
         EnumStorePreferencesRegistry(context)
     }
 
     companion object {
         private lateinit var _instance: EnumStore
-        val EnumStoreExtension.instance: EnumStore
+        internal val instance: EnumStore
             get() = _instance
 
-        fun create(context: Context) {
-            if (!::_instance.isInitialized)
-                _instance = EnumStore(context)
+        fun create(context: Context, logger: EnumStoreLoggerImpl = NoopLogger) {
+            if (!Companion::_instance.isInitialized)
+                _instance = EnumStore(context, logger)
         }
     }
 
-    fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker {
+    internal fun getHandler() = handler
+
+    internal fun <T> from(markedEnum: T): EnumStoreImplInternal where T: Enum<*>, T : EnumStoreMarker {
         val name = when (markedEnum) {
             is EnumStoreShared -> {
                 markedEnum::class.java.annotations.filterIsInstance<PartOf>().firstOrNull()?.collection?.simpleName
@@ -45,7 +58,9 @@ class EnumStore(context: Context) : BaseDatastore() {
         return EnumStoreImplInternal(registry.get(name.toString()))
     }
 
-    inner class EnumStoreImplInternal(private val dataStore: DataStore<Preferences>) : EnumStoreImpl {
+    internal inner class EnumStoreImplInternal(
+        private val dataStore: DataStore<Preferences>
+    ) : EnumStoreImpl {
 
         @WorkerThread
         override fun <T> block(name: Preferences.Key<T>): T? =
